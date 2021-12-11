@@ -9,6 +9,8 @@ from youtube_dl import YoutubeDL
 import get_yt as gy
 from discord import utils
 
+ytbe = ()
+k = 0
 options = Options()
 options.headless = True
 load_dotenv()
@@ -20,6 +22,7 @@ client = discord.Client(intents=intents)
 client = commands.Bot(command_prefix='!')
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': 'False'}
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+q = []
 
 
 @client.event
@@ -58,17 +61,14 @@ async def show_stat(ctx, nickname):
 # music
 @client.command(pass_context=True, name="play")
 async def p1(ctx, *name):
-    print(name)
+    global ytbe
     title = ""
     for i in name:
         title += i + " "
+    if k == 0:
+        q.append(title)
     ytbe = gy.get_url1(title)
-    embed = discord.Embed(
-        title='Now playing:',
-        description=ytbe[1],
-        colour=discord.Colour.from_rgb(255, 0, 0)
-    )
-    await ctx.send(embed=embed)
+    print(ytbe)
     url = ytbe[0]
     await yt(ctx, url)
 
@@ -83,7 +83,7 @@ async def yt(ctx, url):
         print('Уже подключен или не удалось подключиться')
 
     if vc.is_playing():
-        await ctx.send(f'{ctx.message.author.mention}, музыка уже проигрывается.')
+        pass
 
     else:
         with YoutubeDL(YDL_OPTIONS) as ydl:
@@ -94,6 +94,13 @@ async def yt(ctx, url):
         vc.play(
             discord.FFmpegPCMAudio(executable="C:\\XD\\python\\bot\\ffmpeg\\ffmpeg.exe", source=URL,
                                    **FFMPEG_OPTIONS))
+        embed = discord.Embed(
+            title='Now playing:',
+            description=ytbe[1],
+            colour=discord.Colour.from_rgb(255, 0, 0)
+        )
+        await ctx.send(embed=embed)
+        q.remove(q[0])
         gy.num.clear()
 
         while vc.is_playing():
@@ -104,42 +111,33 @@ async def yt(ctx, url):
 
 @client.command(name="stop")
 async def stop(ctx):
-    await vc.disconnect()
+    global k
+    if len(q) == 0:
+        await vc.disconnect()
+        k = 0
+    else:
+        k += 1
+        await vc.disconnect()
+        await p1(ctx, q[0])
+
+
+@client.command(name="pause")
+async def pause(ctx):
+    vc.pause()
+    embed = discord.Embed(title="Pause", description="playing is paused", colour=discord.Colour.from_rgb(255, 0, 0))
+    await ctx.send(embed=embed)
+
+
+@client.command(name="resume")
+async def resume(ctx):
+    vc.resume()
+    embed = discord.Embed(title="Pesume", description="playing is continue", colour=discord.Colour.from_rgb(255, 0, 0))
+    await ctx.send(embed=embed)
 
 
 @client.command(name="night")
 async def gn(ctx, username):
     await ctx.send(username + " говорит: сладких снов!!!")
-
-
-# test functions
-@client.event
-async def on_raw_reaction_add(payload):
-    if payload.message_id == cg.POST_ID:
-        channel = client.get_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
-        member = utils.get(message.guild.members, id=payload.user_id)
-        print(message.guild.members)
-        print(member)
-        print(payload.member)
-        emoji = str(payload.emoji)
-        role = utils.get(message.guild.roles, id=cg.ROLES[emoji])
-        await payload.member.add_roles(role)
-        await message.remove_reaction(payload.emoji, member)
-
-
-@client.event
-async def on_raw_reaction_remove(payload):
-    if payload.message_id == cg.POST_ID:
-        channel = client.get_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
-        member = utils.get(message.guild.members, id=payload.user_id)
-        print(message.guild.members)
-        print(member)
-        print(payload.member)
-        emoji = str(payload.emoji)
-        role = utils.get(message.guild.roles, id=cg.ROLES[emoji])
-        await payload.member.remove_roles(role)
 
 
 client.run(TOKEN)
