@@ -7,8 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from asyncio import sleep
 from youtube_dl import YoutubeDL
 import get_yt as gy
-from discord import utils
-
+from time import sleep
 ytbe = ()
 k = 0
 options = Options()
@@ -22,6 +21,7 @@ client = discord.Client(intents=intents)
 client = commands.Bot(command_prefix='!')
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': 'False'}
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+client.remove_command("help")
 q = []
 
 
@@ -38,6 +38,18 @@ async def on_ready():
     )
 
 
+@client.command(name="help")
+async def help(ctx):
+    embed1 = discord.Embed(title="Bot commands:",  color=discord.Colour.from_rgb(255, 0, 0))
+    embed1.add_field(name="Default commands:", value="1.help - shows this \n 2.stat(+ "
+                                                     "nickname) -shows your WOT stat", inline=False)
+    embed1.add_field(name="Music commands:", value="1.play(+ url or name) - play the song \n 2.stop - stop the "
+                                                   "playing \n "
+                                                   "3.pause - pausing music \n 4.resume - continue the "
+                                                   "playing", inline=False)
+    await ctx.send(embed=embed1)
+
+
 @client.event
 async def on_member_join(member):
     await member.create_dm()
@@ -49,7 +61,6 @@ async def on_member_join(member):
 # wot stat
 @client.command(name="stat")
 async def show_stat(ctx, nickname):
-    print(nickname)
     embed = discord.Embed(
         title='Статистика ' + nickname,
         description=get_url(options, nickname),
@@ -68,14 +79,12 @@ async def p1(ctx, *name):
     if k == 0:
         q.append(title)
     ytbe = gy.get_url1(title)
-    print(ytbe)
     url = ytbe[0]
     await yt(ctx, url)
 
 
 async def yt(ctx, url):
     global vc
-    print(url)
     try:
         voice_channel = ctx.message.author.voice.channel
         vc = await voice_channel.connect()
@@ -134,10 +143,6 @@ async def resume(ctx):
     embed = discord.Embed(title="Pesume", description="playing is continue", colour=discord.Colour.from_rgb(255, 0, 0))
     await ctx.send(embed=embed)
 
-
-@client.command(name="night")
-async def gn(ctx, username):
-    await ctx.send(username + " говорит: сладких снов!!!")
 
 
 client.run(TOKEN)

@@ -12,26 +12,22 @@ num = []
 def get_url1(name):
     url = 'https://www.youtube.com/results?search_query=' + name
     found_title(url)
-    return res2, f
+    return res1, f
 
 
 def found_title(url):
-    global res2, f
+    global res1, f
     driver = webdriver.Chrome(options=options)
     driver.get(url)
-    results = driver.find_elements_by_id(
+    result = driver.find_elements_by_id(
         'video-title')
-    # //a[@id = "video-title"][@class = "yt-simple-endpoint style-scope ytd-video-renderer"]
-    # res1 = res.get_attribute('title')
-
-    # //yt-formatted-string[@class = "style-scope ytd-video-renderer"][@aria-label]
-    # res1 = res.get_attribute('innerHTML')
     f = ''
-    for res in results[:1]:
-        res2 = res.get_attribute('href')
-        num.append(res2)
-        res1 = res.get_attribute('title')
-        f += res1
-    return res2, f
+    res = result[0]
+    res1 = res.get_attribute('href')
+    res2 = res.get_attribute('title')
+    f += res2
+    return res1, f
 
 
+d = get_url1("erika")
+print(d)
